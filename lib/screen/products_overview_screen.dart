@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../model/product.dart';
+import '../widget/products_item.dart';
 
 class ProductsOverviewScreen extends StatelessWidget {
   ProductsOverviewScreen({super.key});
@@ -26,8 +27,12 @@ class ProductsOverviewScreen extends StatelessWidget {
             crossAxisSpacing: 15,
             mainAxisSpacing: 15,
           ),
-          itemBuilder: (ctx, idx) => GridTile(
-            child: Image.network(loadedProducts[idx].imageUrl, fit: BoxFit.fill,),),
+          itemBuilder: (ctx, idx) => ProductsItem(
+            id: loadedProducts[idx].id,
+            name: loadedProducts[idx].name,
+            imageUrl: loadedProducts[idx].imageUrl,
+            unitPrice: loadedProducts[idx].unitPrice,
+          ),
         itemCount: loadedProducts.length,
         padding: const EdgeInsets.all(10),
       )
