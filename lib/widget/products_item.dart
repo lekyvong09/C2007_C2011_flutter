@@ -1,47 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:flutter2/screen/product_detail_screen.dart';
+import 'package:provider/provider.dart';
+
+import '../model/product.dart';
 
 class ProductsItem extends StatelessWidget {
-  final int id;
-  final String name;
-  final String imageUrl;
-  final double unitPrice;
 
-  const ProductsItem({super.key,
-    required this.id, required this.name, required this.imageUrl, required this.unitPrice});
+  const ProductsItem({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final product = context.read<Product>();
+
     return
       GestureDetector(
-        onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (ctx) => ProductDetailScreen(name))
+        onTap: () => Navigator.of(context).pushNamed(
+            ProductDetailScreen.routeName, arguments: product.id
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(10),
           child: GridTile(
             header: GridTileBar(
-              title: Text(name, textAlign: TextAlign.center, maxLines: 2,),
+              title: Text(product.name, textAlign: TextAlign.center, maxLines: 2,),
               backgroundColor: Colors.black54,
             ),
             footer: GridTileBar(
               title: Text(
-                "\$${unitPrice.toStringAsFixed(2)}",
+                "\$${product.unitPrice.toStringAsFixed(2)}",
                 textAlign: TextAlign.center,
               ),
               backgroundColor: Colors.black54,
-              leading: IconButton(
-                icon: const Icon(Icons.favorite),
-                onPressed: () { },
+              leading: Consumer<Product>(builder: (ctx, productProvider, child) => IconButton(
+                icon: Icon(productProvider.isFavorite ? Icons.favorite : Icons.favorite_border),
+                onPressed: () => productProvider.toggleFavoriteStatus(),
                 color: Theme.of(context).colorScheme.secondary,
-              ),
+              ),),
               trailing: IconButton(
                 icon: const Icon(Icons.shopping_cart),
                 onPressed: () { },
                 color: Theme.of(context).colorScheme.secondary,
               ),
             ),
-            child: Image.network(imageUrl, fit: BoxFit.fill,),
+            child: Image.network(product.imageUrl, fit: BoxFit.fill,),
           ),
         ),
       );
