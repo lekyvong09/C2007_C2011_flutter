@@ -3,6 +3,7 @@ import 'package:flutter2/screen/product_detail_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../model/product.dart';
+import '../model/cart.dart';
 
 class ProductsItem extends StatelessWidget {
 
@@ -11,6 +12,7 @@ class ProductsItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final product = context.read<Product>();
+    final cart = context.read<Cart>();
 
     return
       GestureDetector(
@@ -37,7 +39,7 @@ class ProductsItem extends StatelessWidget {
               ),),
               trailing: IconButton(
                 icon: const Icon(Icons.shopping_cart),
-                onPressed: () { },
+                onPressed: () => cart.addItem(product.id, product.unitPrice, product.name),
                 color: Theme.of(context).colorScheme.secondary,
               ),
             ),
