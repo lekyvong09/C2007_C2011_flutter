@@ -55,4 +55,9 @@ class Cart with ChangeNotifier {
     _items.forEach((key, value) => total += value.unitPrice * value.quantity);
     return total;
   }
+
+  void removeItem(int keyCartItem) {
+    _items.remove(keyCartItem);
+    notifyListeners();
+  }
 }
