@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 
 class CartItem {
@@ -58,6 +60,30 @@ class Cart with ChangeNotifier {
 
   void removeItem(int keyCartItem) {
     _items.remove(keyCartItem);
+    notifyListeners();
+  }
+
+  void clear() {
+    _items.clear();
+    notifyListeners();
+  }
+
+  void removeSingleItem(int productId) {
+    log(productId.toString());
+    if (!_items.containsKey(productId)) {
+      return;
+    }
+    if (_items[productId]!.quantity > 1) {
+      log(_items[productId]!.quantity.toString());
+      _items.update(productId, (existingCartItem) => CartItem(
+        productId: existingCartItem.productId,
+        name: existingCartItem.name,
+        unitPrice: existingCartItem.unitPrice,
+        quantity: existingCartItem.quantity - 1
+      ));
+    } else {
+      _items.remove(productId);
+    }
     notifyListeners();
   }
 }
