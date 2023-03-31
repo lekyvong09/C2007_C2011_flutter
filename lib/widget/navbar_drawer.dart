@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter2/screen/admin_product_screen.dart';
 import 'package:flutter2/screen/order_screen.dart';
 
 class NavbarDrawer extends StatelessWidget {
@@ -15,10 +16,17 @@ class NavbarDrawer extends StatelessWidget {
             title: const Text('Shop'),
             onTap: () => Navigator.of(context).pushReplacementNamed('/'),
           ),
+          const Divider(),
           ListTile(
             leading: const Icon(Icons.payment),
             title: const Text('Orders'),
             onTap: () => Navigator.of(context).pushReplacementNamed(OrderScreen.routeName),
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.edit),
+            title: const Text('Manage Product'),
+            onTap: () => Navigator.of(context).pushReplacementNamed(AdminProductScreen.routeName),
           ),
         ],
       ),
