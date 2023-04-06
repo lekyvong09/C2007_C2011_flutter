@@ -1,5 +1,9 @@
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+
+import '../model/product.dart';
 
 class AdminProductEditScreen extends StatefulWidget {
   static const routeName = '/product-edit';
@@ -15,18 +19,85 @@ class _AdminProductEditScreen extends State<AdminProductEditScreen> {
   final _descriptionFocusNode = FocusNode();
   final _imageUrlFocusNode = FocusNode();
   final _imageUrlController = TextEditingController();
+  final _form = GlobalKey<FormState>();
+
+  _updateImageUrl() {
+    if (!_imageUrlFocusNode.hasFocus) {
+      if (_imageUrlController.text.isEmpty
+          || (!_imageUrlController.text.startsWith('http')
+              && !_imageUrlController.text.startsWith('https'))
+          || (!_imageUrlController.text.endsWith('.png')
+              && !_imageUrlController.text.endsWith('.jpg')
+              && !_imageUrlController.text.endsWith('.jpeg'))
+      ) {
+        return;
+      }
+      setState(() { });
+    }
+  }
+
+  @override
+  void initState() {
+    _imageUrlFocusNode.addListener(_updateImageUrl);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _priceFocusNode.dispose();
+    _descriptionFocusNode.dispose();
+    _imageUrlFocusNode.dispose();
+    _imageUrlController.dispose();
+    _imageUrlFocusNode.removeListener(_updateImageUrl);
+    super.dispose();
+  }
+
+  void _saveForm() {
+    bool isValid = _form.currentState!.validate();
+    if (!isValid) {
+      return;
+    }
+
+    _form.currentState!.save();
+    print(_editedProduct);
+  }
+
+  Product _editedProduct = Product(
+    id: 0,
+    name: '',
+    description: '',
+    unitPrice: 0,
+    imageUrl: '',
+  );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit Product'),),
+      appBar: AppBar(
+        title: const Text('Edit Product'),
+        actions: [IconButton(onPressed: _saveForm, icon: const Icon(Icons.save))],
+      ),
       body: Form(
+        key: _form,
         child: Column(
           children: [
             TextFormField(
               decoration: const InputDecoration(labelText: 'Title'),
               textInputAction: TextInputAction.next,
               onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(_priceFocusNode),
+              onSaved: (value) => _editedProduct = Product(
+                id: _editedProduct.id,
+                name: value!,
+                description: _editedProduct.description,
+                unitPrice: _editedProduct.unitPrice,
+                imageUrl: _editedProduct.imageUrl,
+              ),
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return 'Please provide product name';
+                }
+                return null;
+              },
             ),
             TextFormField(
               decoration: const InputDecoration(labelText: 'Unit Price'),
@@ -34,6 +105,19 @@ class _AdminProductEditScreen extends State<AdminProductEditScreen> {
               focusNode: _priceFocusNode,
               keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
               onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(_descriptionFocusNode),
+              onSaved: (value) => _editedProduct = Product(
+                id: _editedProduct.id,
+                name: _editedProduct.name,
+                description: _editedProduct.description,
+                unitPrice: double.parse(value!),
+                imageUrl: _editedProduct.imageUrl,
+              ),
+              validator: (value) {
+                if (value!.isEmpty) { return 'Please provide unit price as a number';}
+                if (double.tryParse(value) == null) { return 'Please enter a number for unit price';}
+                if (double.parse(value) <= 0) { return 'Please enter a number greater than 0'; }
+                return null;
+              },
             ),
             TextFormField(
               decoration: const InputDecoration(labelText: 'Description'),
@@ -42,6 +126,19 @@ class _AdminProductEditScreen extends State<AdminProductEditScreen> {
               keyboardType: TextInputType.multiline,
               focusNode: _descriptionFocusNode,
               onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(_imageUrlFocusNode),
+              onSaved: (value) => _editedProduct = Product(
+                id: _editedProduct.id,
+                name: _editedProduct.name,
+                description: value!,
+                unitPrice: _editedProduct.unitPrice,
+                imageUrl: _editedProduct.imageUrl,
+              ),
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return 'Please provide product name';
+                }
+                return null;
+              },
             ),
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -51,12 +148,9 @@ class _AdminProductEditScreen extends State<AdminProductEditScreen> {
                   height: 100,
                   margin: const EdgeInsets.only(top: 10, right: 10),
                   decoration: BoxDecoration(border: Border.all(width: 1, color: Colors.grey)),
-                  child: FittedBox(
-                    fit: BoxFit.cover,
-                    child: _imageUrlController.text.isEmpty
+                  child: _imageUrlController.text.isEmpty
                       ? const Text('Enter a URL')
-                      : Image.network(_imageUrlController.text),
-                  ),
+                      : FittedBox(fit: BoxFit.cover, child: Image.network(_imageUrlController.text),),
                 ),
                 Expanded(child: TextFormField(
                   decoration: const InputDecoration(labelText: 'Image URL'),
@@ -66,6 +160,21 @@ class _AdminProductEditScreen extends State<AdminProductEditScreen> {
                   onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(_imageUrlFocusNode),
                   controller: _imageUrlController,
                   onEditingComplete: () => setState(() {}),
+                  onSaved: (value) => _editedProduct = Product(
+                    id: _editedProduct.id,
+                    name: _editedProduct.name,
+                    description: _editedProduct.description,
+                    unitPrice: _editedProduct.unitPrice,
+                    imageUrl: value!,
+                  ),
+                  validator: (value) {
+                    if (value!.isEmpty) {return 'Please enter a URL for image';}
+                    if (!value.startsWith('http') && !value.startsWith('https')) {return 'Please enter a valid URL';}
+                    if (!value.endsWith('.png') && !value.endsWith('.jpg') && !value.endsWith('.jpeg')) {
+                      return 'Please enter a valid URL';
+                    }
+                    return null;
+                  },
                 )),
               ],
             ),
