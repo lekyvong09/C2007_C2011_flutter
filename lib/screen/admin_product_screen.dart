@@ -32,6 +32,7 @@ class AdminProductScreen extends StatelessWidget {
         child: ListView.builder(
             itemCount: productsData.items.length,
             itemBuilder: (ctx, idx) => AdminProductItemWidget(
+              id: productsData.items[idx].id,
               tittle: productsData.items[idx].name,
               imageUrl: productsData.items[idx].imageUrl,
             )

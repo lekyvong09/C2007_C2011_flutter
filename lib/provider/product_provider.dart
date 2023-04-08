@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:developer';
+import 'package:http/http.dart' as httpClient;
+
 import 'package:flutter/material.dart';
 
 import '../model/product.dart';
@@ -23,5 +27,43 @@ class ProductProvider with ChangeNotifier {
 
   List<Product> get favoriteItems {
     return _items.where((element) => element.isFavorite).toList();
+  }
+
+  void addProduct(Product product) {
+    final url = Uri.parse('http://localhost:8080/api/products/add');
+    Map<String, String> headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    httpClient.post(url, headers: headers, body: json.encode({
+      'name': product.name,
+      'description': product.description,
+      'unitPrice': product.unitPrice,
+      'imageUrl': product.imageUrl,
+      'date': DateTime.now().toIso8601String(),
+      'category': 'U'
+    })).then((response) {
+      print(response);
+      final res = json.decode(response.body);
+      print(res);
+    });
+
+    // _items.add(newProduct);
+    notifyListeners();
+  }
+
+  void updateProduct(int id, Product newProduct) {
+      final index = _items.indexWhere((element) => element.id == id);
+      if (index >= 0) {
+        _items[index] = newProduct;
+        notifyListeners();
+      } else {
+        log('problem with update product');
+      }
+  }
+
+  void deleteProduct(int id) {
+    _items.removeWhere((element) => element.id == id);
+    notifyListeners();
   }
 }

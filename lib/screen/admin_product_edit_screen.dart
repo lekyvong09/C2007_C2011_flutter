@@ -2,8 +2,10 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../model/product.dart';
+import '../provider/product_provider.dart';
 
 class AdminProductEditScreen extends StatefulWidget {
   static const routeName = '/product-edit';
@@ -57,9 +59,17 @@ class _AdminProductEditScreen extends State<AdminProductEditScreen> {
     if (!isValid) {
       return;
     }
-
     _form.currentState!.save();
-    print(_editedProduct);
+    // print(_editedProduct);
+    // print(_editedProduct.id > 0);
+    // print(_editedProduct.id.runtimeType);
+    if (_editedProduct.id > 0) {
+      context.read<ProductProvider>().updateProduct(_editedProduct.id, _editedProduct);
+    } else {
+      context.read<ProductProvider>().addProduct(_editedProduct);
+    }
+
+    Navigator.of(context).pop();
   }
 
   Product _editedProduct = Product(
@@ -70,8 +80,30 @@ class _AdminProductEditScreen extends State<AdminProductEditScreen> {
     imageUrl: '',
   );
 
+  var _initValue = {
+    'name': '',
+    'description': '',
+    'unitPrice': '',
+    'imageUrl': '',
+  };
+
   @override
   Widget build(BuildContext context) {
+
+    final productId = ModalRoute.of(context)?.settings.arguments as int;
+    log(productId.toString());
+
+    if (productId != 0) {
+      _editedProduct = context.read<ProductProvider>().findById(productId);
+      _initValue = {
+        'name': _editedProduct.name,
+        'description': _editedProduct.description,
+        'unitPrice': _editedProduct.unitPrice.toString(),
+        'imageUrl': '',
+      };
+      _imageUrlController.text = _editedProduct.imageUrl;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Product'),
@@ -84,6 +116,7 @@ class _AdminProductEditScreen extends State<AdminProductEditScreen> {
             TextFormField(
               decoration: const InputDecoration(labelText: 'Title'),
               textInputAction: TextInputAction.next,
+              initialValue: _initValue['name'],
               onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(_priceFocusNode),
               onSaved: (value) => _editedProduct = Product(
                 id: _editedProduct.id,
@@ -102,6 +135,7 @@ class _AdminProductEditScreen extends State<AdminProductEditScreen> {
             TextFormField(
               decoration: const InputDecoration(labelText: 'Unit Price'),
               textInputAction: TextInputAction.next,
+              initialValue: _initValue['unitPrice'],
               focusNode: _priceFocusNode,
               keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
               onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(_descriptionFocusNode),
@@ -122,6 +156,7 @@ class _AdminProductEditScreen extends State<AdminProductEditScreen> {
             TextFormField(
               decoration: const InputDecoration(labelText: 'Description'),
               textInputAction: TextInputAction.next,
+              initialValue: _initValue['description'],
               maxLines: 3,
               keyboardType: TextInputType.multiline,
               focusNode: _descriptionFocusNode,
