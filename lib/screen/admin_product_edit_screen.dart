@@ -1,4 +1,5 @@
 
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -22,6 +23,9 @@ class _AdminProductEditScreen extends State<AdminProductEditScreen> {
   final _imageUrlFocusNode = FocusNode();
   final _imageUrlController = TextEditingController();
   final _form = GlobalKey<FormState>();
+  Timer _timer = Timer(const Duration(milliseconds: 1), () { });
+
+  bool _isLoading = false;
 
   _updateImageUrl() {
     if (!_imageUrlFocusNode.hasFocus) {
@@ -51,6 +55,7 @@ class _AdminProductEditScreen extends State<AdminProductEditScreen> {
     _imageUrlFocusNode.dispose();
     _imageUrlController.dispose();
     _imageUrlFocusNode.removeListener(_updateImageUrl);
+    _timer.cancel();
     super.dispose();
   }
 
@@ -59,17 +64,39 @@ class _AdminProductEditScreen extends State<AdminProductEditScreen> {
     if (!isValid) {
       return;
     }
+    setState(() {
+      _isLoading = true;
+    });
     _form.currentState!.save();
     // print(_editedProduct);
     // print(_editedProduct.id > 0);
     // print(_editedProduct.id.runtimeType);
     if (_editedProduct.id > 0) {
       context.read<ProductProvider>().updateProduct(_editedProduct.id, _editedProduct);
+      setState(() {_isLoading = false;});
     } else {
-      context.read<ProductProvider>().addProduct(_editedProduct);
-    }
+      _timer = Timer(const Duration(seconds: 10), () {
+        context.read<ProductProvider>()
+            .addProduct(_editedProduct)
+            .then((value) {
+              setState(() {_isLoading = false;});
+              Navigator.of(context).pop();
+            }
+            ).catchError((error) {
+              return showDialog<Null>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('Error'),
+                    content: Text(error.toString()),
+                    actions: [TextButton(
+                      child: const Text('Ok'),
+                      onPressed: () => Navigator.of(ctx).pop(),
+                    )]
+                  ));
+              });
+            });
 
-    Navigator.of(context).pop();
+    }
   }
 
   Product _editedProduct = Product(
@@ -90,18 +117,20 @@ class _AdminProductEditScreen extends State<AdminProductEditScreen> {
   @override
   Widget build(BuildContext context) {
 
-    final productId = ModalRoute.of(context)?.settings.arguments as int;
-    log(productId.toString());
+    if (ModalRoute.of(context)?.settings.arguments != null) {
+      final productId = ModalRoute.of(context)?.settings.arguments as int;
+      log(productId.toString());
 
-    if (productId != 0) {
-      _editedProduct = context.read<ProductProvider>().findById(productId);
-      _initValue = {
-        'name': _editedProduct.name,
-        'description': _editedProduct.description,
-        'unitPrice': _editedProduct.unitPrice.toString(),
-        'imageUrl': '',
-      };
-      _imageUrlController.text = _editedProduct.imageUrl;
+      if (productId != 0) {
+        _editedProduct = context.read<ProductProvider>().findById(productId);
+        _initValue = {
+          'name': _editedProduct.name,
+          'description': _editedProduct.description,
+          'unitPrice': _editedProduct.unitPrice.toString(),
+          'imageUrl': '',
+        };
+        _imageUrlController.text = _editedProduct.imageUrl;
+      }
     }
 
     return Scaffold(
@@ -109,7 +138,7 @@ class _AdminProductEditScreen extends State<AdminProductEditScreen> {
         title: const Text('Edit Product'),
         actions: [IconButton(onPressed: _saveForm, icon: const Icon(Icons.save))],
       ),
-      body: Form(
+      body: _isLoading ? const Center(child: CircularProgressIndicator()) : Form(
         key: _form,
         child: Column(
           children: [
