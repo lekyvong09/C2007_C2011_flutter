@@ -4,6 +4,7 @@ import 'package:flutter2/model/order.dart';
 import 'package:flutter2/provider/product_provider.dart';
 import 'package:flutter2/screen/admin_product_edit_screen.dart';
 import 'package:flutter2/screen/admin_product_screen.dart';
+import 'package:flutter2/screen/auth_screen.dart';
 import 'package:flutter2/screen/cart_screen.dart';
 import 'package:flutter2/screen/order_screen.dart';
 import 'package:flutter2/screen/product_detail_screen.dart';
@@ -34,8 +35,9 @@ class MyApp extends StatelessWidget {
             accentColor: Colors.deepOrangeAccent,
           ),
         ),
-        home: const ProductsOverviewScreen(),
+        home: const AuthScreen(), // ProductsOverviewScreen(),
         routes: {
+          ProductsOverviewScreen.routeName: (ctx) => const ProductsOverviewScreen(),
           ProductDetailScreen.routeName: (ctx) => const ProductDetailScreen(),
           CartScreen.routeName: (ctx) => const CartScreen(),
           OrderScreen.routeName: (ctx) => const OrderScreen(),

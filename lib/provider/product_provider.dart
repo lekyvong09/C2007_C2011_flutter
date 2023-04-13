@@ -87,18 +87,54 @@ class ProductProvider with ChangeNotifier {
   }
 
 
-  void updateProduct(int id, Product newProduct) {
+  Future<void> updateProduct(int id, Product newProduct) async {
       final index = _items.indexWhere((element) => element.id == id);
-      if (index >= 0) {
-        _items[index] = newProduct;
-        notifyListeners();
+      if (index > -1) {
+        final url = Uri.parse('http://localhost:8080/api/products/update');
+        Map<String, String> headers = {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        };
+        try {
+          final response = await httpClient.post(url, headers: headers, body: json.encode({
+            'name': newProduct.name,
+            'description': newProduct.description,
+            'unitPrice': newProduct.unitPrice,
+            'imageUrl': newProduct.imageUrl,
+            'id': id
+          }));
+          final res = json.decode(response.body);
+          /// update response from API to local variable _items
+          final updatedProduct = Product(
+              id: res['id'],
+              name: res['name'],
+              description: res['description'],
+              unitPrice: res['unitPrice'],
+              imageUrl: res['imageUrl']
+          );
+          _items[index] = updatedProduct;
+          notifyListeners();
+        } catch(error) {
+          log(error.toString());
+          rethrow;
+        }
       } else {
         log('problem with update product');
       }
   }
 
-  void deleteProduct(int id) {
-    _items.removeWhere((element) => element.id == id);
-    notifyListeners();
+  Future<void> deleteProduct(int id) async {
+    final url = Uri.parse('http://localhost:8080/api/products/delete/$id');
+
+    try {
+      final response = await httpClient.delete(url);
+      if (response.statusCode == 204) {
+        _items.removeWhere((element) => element.id == id);
+        notifyListeners();
+      }
+    } catch (error) {
+      log(error.toString());
+      rethrow;
+    }
   }
 }

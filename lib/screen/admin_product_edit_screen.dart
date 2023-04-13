@@ -72,7 +72,26 @@ class _AdminProductEditScreen extends State<AdminProductEditScreen> {
     // print(_editedProduct.id > 0);
     // print(_editedProduct.id.runtimeType);
     if (_editedProduct.id > 0) {
-      context.read<ProductProvider>().updateProduct(_editedProduct.id, _editedProduct);
+      try {
+        await context.read<ProductProvider>().updateProduct(_editedProduct.id, _editedProduct);
+      } catch (error) {
+        log(error.toString());
+        await showDialog<Null>(context: context, builder: (ctx) => AlertDialog(
+          title: const Text('Error'),
+          content: Text(error.toString()),
+          actions: [
+            TextButton(
+              child: const Text('Ok'),
+              onPressed: () => {Navigator.of(ctx).pop()},
+            ),
+          ],
+        ),);
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+
       setState(() {_isLoading = false;});
     } else {
       try {
