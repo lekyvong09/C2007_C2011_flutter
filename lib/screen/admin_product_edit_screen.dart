@@ -59,7 +59,7 @@ class _AdminProductEditScreen extends State<AdminProductEditScreen> {
     super.dispose();
   }
 
-  void _saveForm() {
+  Future<void> _saveForm() async {
     bool isValid = _form.currentState!.validate();
     if (!isValid) {
       return;
@@ -75,27 +75,23 @@ class _AdminProductEditScreen extends State<AdminProductEditScreen> {
       context.read<ProductProvider>().updateProduct(_editedProduct.id, _editedProduct);
       setState(() {_isLoading = false;});
     } else {
-      _timer = Timer(const Duration(seconds: 10), () {
-        context.read<ProductProvider>()
-            .addProduct(_editedProduct)
-            .then((value) {
-              setState(() {_isLoading = false;});
-              Navigator.of(context).pop();
-            }
-            ).catchError((error) {
-              return showDialog<Null>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: const Text('Error'),
-                    content: Text(error.toString()),
-                    actions: [TextButton(
-                      child: const Text('Ok'),
-                      onPressed: () => Navigator.of(ctx).pop(),
-                    )]
-                  ));
-              });
-            });
-
+      try {
+        await context.read<ProductProvider>().addProduct(_editedProduct);
+      } catch (error) {
+        await showDialog<Null>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+                title: const Text('Error'),
+                content: Text(error.toString()),
+                actions: [TextButton(
+                  child: const Text('Ok'),
+                  onPressed: () => Navigator.of(ctx).pop(),
+                )]
+            ));
+      } finally {
+        setState(() {_isLoading = false;});
+        Navigator.of(context).pop();
+      }
     }
   }
 

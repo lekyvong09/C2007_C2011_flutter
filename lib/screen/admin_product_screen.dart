@@ -12,6 +12,10 @@ class AdminProductScreen extends StatelessWidget {
 
   const AdminProductScreen({super.key});
 
+  Future<void> _refreshProduct(BuildContext context) async {
+    await context.read<ProductProvider>().fetchProducts();
+  }
+
   @override
   Widget build(BuildContext context) {
     final productsData = Provider.of<ProductProvider>(context);
@@ -27,15 +31,18 @@ class AdminProductScreen extends StatelessWidget {
         ],
       ),
       drawer: const NavbarDrawer(),
-      body: Padding(
-        padding: const EdgeInsets.all(8),
-        child: ListView.builder(
-            itemCount: productsData.items.length,
-            itemBuilder: (ctx, idx) => AdminProductItemWidget(
-              id: productsData.items[idx].id,
-              tittle: productsData.items[idx].name,
-              imageUrl: productsData.items[idx].imageUrl,
-            )
+      body: RefreshIndicator(
+        onRefresh: () => _refreshProduct(context),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: ListView.builder(
+              itemCount: productsData.items.length,
+              itemBuilder: (ctx, idx) => AdminProductItemWidget(
+                id: productsData.items[idx].id,
+                tittle: productsData.items[idx].name,
+                imageUrl: productsData.items[idx].imageUrl,
+              )
+          ),
         ),
       ),
     );
