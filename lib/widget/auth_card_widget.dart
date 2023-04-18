@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter2/provider/auth_provider.dart';
 import 'package:provider/provider.dart';
 
+import '../model/http_exception.dart';
+
 enum AuthMode { SIGNUP, LOGIN }
 
 class AuthCard extends StatefulWidget {
@@ -20,6 +22,19 @@ class _AuthCardState extends State<AuthCard> {
   final _passwordController = TextEditingController();
   var _isLoading = false;
 
+  void _showErrorDialog(String message) {
+    showDialog(context: context, builder: (ctx) => AlertDialog(
+      title: const Text('Login Error'),
+      content: Text(message),
+      actions: <Widget>[
+        TextButton(
+          child: const Text('Okay'),
+          onPressed: () => Navigator.of(ctx).pop(),
+        ),
+      ],
+    ));
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -29,6 +44,16 @@ class _AuthCardState extends State<AuthCard> {
     setState(() { _isLoading = true; });
     if (_authMode == AuthMode.LOGIN) {
       /// log user in
+      try {
+        await context.read<AuthProvider>().login(
+            _authData['email']!, _authData['password']!);
+      } on HttpException catch(error) {
+        String errorMessage = error.toString();
+        _showErrorDialog(errorMessage);
+      } catch(error) {
+        String errorMessage = 'Could not authenticate. Please try again later.';
+        _showErrorDialog(errorMessage);
+      }
     } else {
       /// sign user up
       await context.read<AuthProvider>().signup(_authData['email']!, _authData['password']!);
