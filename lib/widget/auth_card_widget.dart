@@ -22,8 +22,8 @@ class _AuthCardState extends State<AuthCard> {
   final _passwordController = TextEditingController();
   var _isLoading = false;
 
-  void _showErrorDialog(String message) {
-    showDialog(context: context, builder: (ctx) => AlertDialog(
+  Future<void> _showErrorDialog(String message) async {
+    await showDialog<Null>(context: context, builder: (ctx) => AlertDialog(
       title: const Text('Login Error'),
       content: Text(message),
       actions: <Widget>[
@@ -48,11 +48,13 @@ class _AuthCardState extends State<AuthCard> {
         await context.read<AuthProvider>().login(
             _authData['email']!, _authData['password']!);
       } on HttpException catch(error) {
+        log('in httpException');
         String errorMessage = error.toString();
-        _showErrorDialog(errorMessage);
+        await _showErrorDialog(errorMessage);
       } catch(error) {
+        log('in catch(error)');
         String errorMessage = 'Could not authenticate. Please try again later.';
-        _showErrorDialog(errorMessage);
+        await _showErrorDialog(errorMessage);
       }
     } else {
       /// sign user up

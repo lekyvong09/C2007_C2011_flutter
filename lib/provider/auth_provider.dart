@@ -5,6 +5,8 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as httpClient;
 
+import '../model/http_exception.dart';
+
 class AuthProvider with ChangeNotifier {
 
   Future<void> signup(String email, String password) async {
@@ -43,7 +45,12 @@ class AuthProvider with ChangeNotifier {
       }));
       final res = json.decode(response.body);
       log(res.toString());
+
+      log(response.statusCode.toString());
       log(json.decode(response.body)['token'].toString());
+      if (response.statusCode != 200) {
+        throw HttpException(json.decode(response.body)['message'].toString());
+      }
       notifyListeners();
     } catch (error) {
       log(error.toString());
