@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (BuildContext context) => Orders(),),
         ChangeNotifierProvider(create: (BuildContext context) => AuthProvider(),),
       ],
-      child: MaterialApp(
+      child: Consumer<AuthProvider>(builder: (ctx, auth, _) => MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
           fontFamily: 'Roboto',
@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
             accentColor: Colors.deepOrangeAccent,
           ),
         ),
-        home: const AuthScreen(), // ProductsOverviewScreen(),
+        home: auth.isAuth ? const ProductsOverviewScreen() : const AuthScreen(), // ProductsOverviewScreen(),
         routes: {
           ProductsOverviewScreen.routeName: (ctx) => const ProductsOverviewScreen(),
           ProductDetailScreen.routeName: (ctx) => const ProductDetailScreen(),
@@ -47,6 +47,6 @@ class MyApp extends StatelessWidget {
           AdminProductEditScreen.routeName: (ctx) => const AdminProductEditScreen(),
         },
       ),
-    );
+    ));
   }
 }
